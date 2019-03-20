@@ -1765,7 +1765,7 @@ function BankItems_CreateFrames()
 
 	-- Create the 28 main bank buttons (NUM_BANKGENERIC_SLOTS == 28)
 	for i = 1, NUM_BANKGENERIC_SLOTS do
-		ItemButtonAr[i] = CreateFrame("Button", "BankItems_Item"..i, BankItems_Frame, "ItemButtonTemplate")
+		ItemButtonAr[i] = CreateFrame("ItemButton",  "BankItems_Item"..i, BankItems_Frame)
 		ItemButtonAr[i]:SetID(i)
 		if i == 1 then
 			ItemButtonAr[i]:SetPoint("TOPLEFT", 40, -73)
@@ -1779,7 +1779,7 @@ function BankItems_CreateFrames()
 
 	-- Create the 14 bag buttons
 	for _, i in ipairs(BAGNUMBERS) do
-		BagButtonAr[i] = CreateFrame("Button", "BankItems_Bag"..i, BankItems_Frame, "ItemButtonTemplate")
+		BagButtonAr[i] = CreateFrame("ItemButton", "BankItems_Bag"..i, BankItems_Frame)
 		BagButtonAr[i]:SetID(i)
 		BagButtonAr[i].isBag = 1
 		BagButtonAr[i].showOverlay = false
@@ -1876,7 +1876,7 @@ function BankItems_CreateFrames()
 		BagContainerAr[i].background1Slot:SetPoint("TOPLEFT", 0, 0)
 		BagContainerAr[i].background1Slot:SetTexCoord(0, 0.7734375, 0, 0.578125)
 		for j = 1, MAX_CONTAINER_ITEMS do
-			BagContainerAr[i][j] = CreateFrame("Button", name.."Item"..j, BagContainerAr[i], "ItemButtonTemplate")
+			BagContainerAr[i][j] = CreateFrame("ItemButton", name.."Item"..j, BagContainerAr[i])
 			--BagContainerAr[i][j]:SetID(j)
 			if i == 102 then -- currency bag
 				BagContainerAr[i][j].Count:SetFontObject(TextStatusBarText)
@@ -2164,7 +2164,7 @@ function BankItems_CreateFrames()
 
 	-- Create the 98 guild bank buttons
 	for i = 1, 98 do
-		GBButtonAr[i] = CreateFrame("Button", nil, BankItems_GBFrame, "ItemButtonTemplate") --shouldn't need a global for the button names anymore
+		GBButtonAr[i] = CreateFrame("ItemButton", nil, BankItems_GBFrame) --shouldn't need a global for the button names anymore
 		GBButtonAr[i]:SetID(i)
 		if i == 1 then
 			GBButtonAr[i]:SetPoint("TOPLEFT", 37, -73)
@@ -2436,7 +2436,7 @@ function BankItems_CreateFrames()
 
 	-- Create the 98 reagent bank buttons
 	for i = 1, NUM_REAGENTBANKGENERIC_SLOTS do
-		RBButtonAr[i] = CreateFrame("Button", nil, BankItems_RBFrame, "ItemButtonTemplate")
+		RBButtonAr[i] = CreateFrame("ItemButton", nil, BankItems_RBFrame)
 		RBButtonAr[i]:SetID(i)
 		if i == 1 then
 			RBButtonAr[i]:SetPoint("TOPLEFT", 22, -53)
@@ -2571,7 +2571,7 @@ function BankItems_CreateFrames()
 	
 	-- Create the 80 void storage buttons
 	for i = 1, 80 do
-		VoidButtonAr[i] = CreateFrame("Button", nil, BankItems_VoidFrame.StorageFrame, "ItemButtonTemplate")
+		VoidButtonAr[i] = CreateFrame("ItemButton", nil, BankItems_VoidFrame.StorageFrame)
 		VoidButtonAr[i]:SetID(i)
 		VoidButtonAr[i].bg = VoidButtonAr[i]:CreateTexture(nil, "BACKGROUND")
 		VoidButtonAr[i].bg:SetSize(41,41)
