@@ -1,6 +1,6 @@
 ﻿--[[	*****************************************************************
 	BankItems v3.0
-	2021-January-10
+	January 28, 2023
 
 	Author: Xinhuan @ US Blackrock Alliance
 	Author: Thranduel @ US - Mankirk
@@ -262,7 +262,6 @@ local BANKITEMS_INVSLOT = {
 -- Localize some globals
 local pairs, ipairs = pairs, ipairs
 local gsub, strfind, strlower, strmatch, strsplit = gsub, strfind, strlower, strmatch, strsplit
---local GetContainerItemLink, GetContainerItemInfo = C_Container.GetContainerItemLink, GetContainerItemInfo
 local GetInboxHeaderInfo, GetInboxItem, GetInboxItemLink = GetInboxHeaderInfo, GetInboxItem, GetInboxItemLink
 
 -- Localize some frame references
@@ -1503,16 +1502,11 @@ function BankItems_PopulateFrame()
 	end
 	-- 24 bank slots
 	for i = 1, 28 do
-		if ( bankPlayer[i] ) then			
-			--ItemButtonAr[i].texture:SetTexture(bankPlayer[i].icon)
+		if ( bankPlayer[i] ) then
 			ItemButtonAr[i].texture:SetTexture(bankPlayer[i].icon.iconFileID)
 			
-			
 			if (bankPlayer[i].icon.stackCount > 1) then
-			--if (bankPlayer[i].count > 1) then
-			--if (bankPlayer[i].count and bankPlayer[i].count > 1) then
 				ItemButtonAr[i].count:Show()
-				--ItemButtonAr[i].count:SetText(bankPlayer[i].count)
 				ItemButtonAr[i].count:SetText(bankPlayer[i].icon.stackCount)
 			else
 				ItemButtonAr[i].count:Hide()
@@ -1577,7 +1571,7 @@ function BankItems_printTableKeys(t)
 end
 
 function BankItems_PopulateBag(bagID)
-	local _, invSlotId, button, theBag, idx, textureName, itemCount
+	local _, button, theBag, idx, textureName, itemCount
 	theBag = bankPlayer["Bag"..bagID]
 	if theBag and theBag.size then
 		for bagItem = 1, theBag.size do
@@ -2017,10 +2011,6 @@ function BankItems_Search(searchText)
 							if (count == 1) then
 								text = text.."Contents of "..gsub(key, "|", " of ").."\n"
 							end
-							--BankItems_DebugItem(bankPlayer[num])
-							--BankItems_printTableKeys(bankPlayer[num])
-							--print(bankPlayer[num].icon.stackCount)
-							--text = text..prefix..bankPlayer[num].count.." "..BankItems_ParseLink(bankPlayer[num].link).."\n"
 							text = text..prefix..bankPlayer[num].icon.stackCount.." "..BankItems_ParseLink(bankPlayer[num].link).."\n"
 						end
 					end
@@ -2047,7 +2037,6 @@ function BankItems_Search(searchText)
 									if (count == 1) then
 										text = text.."Contents of "..gsub(key, "|", " of ").."\n"
 									end
-									--text = text..prefix..theBag[bagItem].count.." "..BankItems_ParseLink(theBag[bagItem].link).."\n"
 									text = text..prefix..theBag[bagItem].icon.stackCount.." "..BankItems_ParseLink(theBag[bagItem].link).."\n"
 								end
 							end
