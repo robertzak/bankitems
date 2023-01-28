@@ -1,8 +1,9 @@
 ﻿--[[	*****************************************************************
-	BankItems v2.56
+	BankItems v3.0
 	2021-January-10
 
 	Author: Xinhuan @ US Blackrock Alliance
+	Author: Thranduel @ US - Mankirk
 	*****************************************************************
 	Description:
 		Type /bi or /bankitems to see what is currently in your
@@ -194,6 +195,13 @@ Xinhuan's Note:
 -- 2019-December-29 Version 2.55 fixed an issue where moving something to or from the bank gave double-counting.
 -- 2021-Jan-10 Version 2.56 updated for 1.13.6
 
+-- January 28, 2023 Thranduel @ Mankirk: BankItems WotLK Classic Version 3.0
+--		Fixed mod to work with 10.0 API added in WotLK 3.4.1
+--			* You can once again view the items in the bags/bank for all characters you've viewed
+--			* You can search for items and get accurate counts
+--		Known Issues:
+-- 			* Items Counts for tooltips are totally jacked up
+
 --]]
 
 BankItems_Save			= {}		-- table, SavedVariable, can't be local
@@ -221,6 +229,8 @@ local BANKITEMS_BOTTOM_SCREEN_LIMIT	= 80				-- Pixels from bottom not to overlap
 local BANKITEMS_UCFA = updateContainerFrameAnchors	-- Remember Blizzard's UCFA for NON-SAFE replacement
 local BAGNUMBERS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100} -- List of bag numbers used internally by BankItems (11 and 101 removed for Classic)
 local BAGNUMBERSPLUSMAIL = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 101}	-- List of bag numbers used internally by BankItems (11 removed for Classic)
+-- Why is 11 removed for "classic" should it be there for bc/wotlk? There are 7 bank slots, 4 bag slots , and the backpack for 12 total (IE 0-11)
+--local BAGNUMBERSPLUSMAIL = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100, 101}	
 -- 0 through 4 are the player's bags, to be shown in reverse order, preceded by 100, the player's equipment
 -- 5 through 10 are the bank bags, left to right
 -- 101 is never visible, contains the mail information
@@ -252,7 +262,7 @@ local BANKITEMS_INVSLOT = {
 -- Localize some globals
 local pairs, ipairs = pairs, ipairs
 local gsub, strfind, strlower, strmatch, strsplit = gsub, strfind, strlower, strmatch, strsplit
-local GetContainerItemLink, GetContainerItemInfo = GetContainerItemLink, GetContainerItemInfo
+--local GetContainerItemLink, GetContainerItemInfo = C_Container.GetContainerItemLink, GetContainerItemInfo
 local GetInboxHeaderInfo, GetInboxItem, GetInboxItemLink = GetInboxHeaderInfo, GetInboxItem, GetInboxItemLink
 
 -- Localize some frame references
@@ -1252,10 +1262,10 @@ function BankItems_SaveItems()
 	local itemLink, bagNum_ID
 	if (isBankOpen) then
 		for num = 1, 28 do
-			itemLink = GetContainerItemLink(BANK_CONTAINER, num)
+			itemLink = C_Container.GetContainerItemLink(BANK_CONTAINER, num)
 			if (itemLink) then
 				selfPlayer[num] = selfPlayer[num] or newTable()
-				selfPlayer[num].icon, selfPlayer[num].count = GetContainerItemInfo(BANK_CONTAINER, num)
+				selfPlayer[num].icon, selfPlayer[num].count = C_Container.GetContainerItemInfo(BANK_CONTAINER, num)
 				selfPlayer[num].link = itemLink
 			else
 				delTable(selfPlayer[num])
@@ -1270,13 +1280,13 @@ function BankItems_SaveItems()
 				local theBag = selfPlayer["Bag"..bagNum]
 				theBag.link = itemLink
 				theBag.icon = GetInventoryItemTexture("player", bagNum_ID)
-				theBag.size = GetContainerNumSlots(bagNum)
+				theBag.size = C_Container.GetContainerNumSlots(bagNum)
 				for bagItem = 1, theBag.size do
-					itemLink = GetContainerItemLink(bagNum, bagItem)
+					itemLink = C_Container.GetContainerItemLink(bagNum, bagItem)
 					if (itemLink) then
 						theBag[bagItem] = theBag[bagItem] or newTable()
 						theBag[bagItem].link = itemLink
-						theBag[bagItem].icon, theBag[bagItem].count = GetContainerItemInfo(bagNum, bagItem)
+						theBag[bagItem].icon, theBag[bagItem].count = C_Container.GetContainerItemInfo(bagNum, bagItem)
 					else
 						delTable(theBag[bagItem])
 						theBag[bagItem] = nil
@@ -1331,15 +1341,15 @@ function BankItems_SaveInvItems(bagID)
 			selfPlayer[bagString] = selfPlayer[bagString] or newTable()
 			selfPlayer[bagString].link = nil
 			selfPlayer[bagString].icon = "Interface\\Buttons\\Button-Backpack-Up"
-			selfPlayer[bagString].size = GetContainerNumSlots(bagNum)
+			selfPlayer[bagString].size = C_Container.GetContainerNumSlots(bagNum)
 		else
-			bagNum_ID = ContainerIDToInventoryID(bagNum)
+			bagNum_ID = C_Container.ContainerIDToInventoryID(bagNum)
 			itemLink = GetInventoryItemLink("player", bagNum_ID)
 			if (itemLink) then
 				selfPlayer[bagString] = selfPlayer[bagString] or newTable()
 				selfPlayer[bagString].link = itemLink
 				selfPlayer[bagString].icon = GetInventoryItemTexture("player", bagNum_ID)
-				selfPlayer[bagString].size = GetContainerNumSlots(bagNum)
+				selfPlayer[bagString].size = C_Container.GetContainerNumSlots(bagNum)
 			else
 				delTable(selfPlayer[bagString])
 				selfPlayer[bagString] = nil
@@ -1352,11 +1362,11 @@ function BankItems_SaveInvItems(bagID)
 		local theBag = selfPlayer[bagString]
 		if (theBag) then
 			for bagItem = 1, theBag.size do
-				itemLink = GetContainerItemLink(bagNum, bagItem)
+				itemLink = C_Container.GetContainerItemLink(bagNum, bagItem)
 				if (itemLink) then
 					theBag[bagItem] = theBag[bagItem] or newTable()
 					theBag[bagItem].link = itemLink
-					theBag[bagItem].icon, theBag[bagItem].count = GetContainerItemInfo(bagNum, bagItem)
+					theBag[bagItem].icon, theBag[bagItem].count = C_Container.GetContainerItemInfo(bagNum, bagItem)
 				else
 					delTable(theBag[bagItem])
 					theBag[bagItem] = nil
@@ -1493,11 +1503,17 @@ function BankItems_PopulateFrame()
 	end
 	-- 24 bank slots
 	for i = 1, 28 do
-		if ( bankPlayer[i] ) then
-			ItemButtonAr[i].texture:SetTexture(bankPlayer[i].icon)
-			if (bankPlayer[i].count > 1) then
+		if ( bankPlayer[i] ) then			
+			--ItemButtonAr[i].texture:SetTexture(bankPlayer[i].icon)
+			ItemButtonAr[i].texture:SetTexture(bankPlayer[i].icon.iconFileID)
+			
+			
+			if (bankPlayer[i].icon.stackCount > 1) then
+			--if (bankPlayer[i].count > 1) then
+			--if (bankPlayer[i].count and bankPlayer[i].count > 1) then
 				ItemButtonAr[i].count:Show()
-				ItemButtonAr[i].count:SetText(bankPlayer[i].count)
+				--ItemButtonAr[i].count:SetText(bankPlayer[i].count)
+				ItemButtonAr[i].count:SetText(bankPlayer[i].icon.stackCount)
 			else
 				ItemButtonAr[i].count:Hide()
 			end
@@ -1543,8 +1559,25 @@ function BankItems_PopulateFrame()
 	end
 end
 
+function BankItems_DebugItem(item)
+	for key, value in pairs(item) do
+		if(type(value) == "table") then
+			BankItems_DebugItem(value)
+		else
+			print(key .. "=" .. tostring(value))
+		end
+		print("---------------------")
+	end
+end
+
+function BankItems_printTableKeys(t)	
+	for key, value in pairs(t) do
+		print(key)
+	end
+end
+
 function BankItems_PopulateBag(bagID)
-	local _, button, theBag, idx, textureName
+	local _, invSlotId, button, theBag, idx, textureName, itemCount
 	theBag = bankPlayer["Bag"..bagID]
 	if theBag and theBag.size then
 		for bagItem = 1, theBag.size do
@@ -1565,14 +1598,27 @@ function BankItems_PopulateBag(bagID)
 --					BankItems_PrevMailButton:Hide()
 --				end
 			end
-			if (theBag[idx]) then
+			if (theBag[idx]) then			
+				-- First determine the item texture and count
 				if (bagID == 100) then
-					_, textureName = GetInventorySlotInfo(BANKITEMS_INVSLOT[idx])
+					-- Equipped Items (IE Bag100) have to be handled differently
+					if(theBag[idx].icon) then
+						textureName = theBag[idx].icon
+					else
+						-- if the icon is null, use the inventory slot texture instead
+						_, textureName = GetInventorySlotInfo(BANKITEMS_INVSLOT[idx])
+					end
+					itemCount = theBag[idx].count
+				else
+					textureName = theBag[idx].icon.iconFileID
+					itemCount = theBag[idx].icon.stackCount
 				end
-				button.texture:SetTexture(theBag[idx].icon or textureName)
-				if (theBag[idx].count > 1) then
+				button.texture:SetTexture(textureName)
+				
+				
+				if (itemCount > 1) then
 					button.count:Show()
-					button.count:SetText(theBag[idx].count)
+					button.count:SetText(itemCount)
 				else
 					button.count:Hide()
 				end
@@ -1971,7 +2017,11 @@ function BankItems_Search(searchText)
 							if (count == 1) then
 								text = text.."Contents of "..gsub(key, "|", " of ").."\n"
 							end
-							text = text..prefix..bankPlayer[num].count.." "..BankItems_ParseLink(bankPlayer[num].link).."\n"
+							--BankItems_DebugItem(bankPlayer[num])
+							--BankItems_printTableKeys(bankPlayer[num])
+							--print(bankPlayer[num].icon.stackCount)
+							--text = text..prefix..bankPlayer[num].count.." "..BankItems_ParseLink(bankPlayer[num].link).."\n"
+							text = text..prefix..bankPlayer[num].icon.stackCount.." "..BankItems_ParseLink(bankPlayer[num].link).."\n"
 						end
 					end
 				end
@@ -1997,7 +2047,8 @@ function BankItems_Search(searchText)
 									if (count == 1) then
 										text = text.."Contents of "..gsub(key, "|", " of ").."\n"
 									end
-									text = text..prefix..theBag[bagItem].count.." "..BankItems_ParseLink(theBag[bagItem].link).."\n"
+									--text = text..prefix..theBag[bagItem].count.." "..BankItems_ParseLink(theBag[bagItem].link).."\n"
+									text = text..prefix..theBag[bagItem].icon.stackCount.." "..BankItems_ParseLink(theBag[bagItem].link).."\n"
 								end
 							end
 						end
@@ -2330,7 +2381,7 @@ end
 -------------------------------------------------
 -- Set scripts of the various widgets
 
--- The 24 main bank buttons
+-- The 28 main bank buttons
 for i = 1, 28 do
 	ItemButtonAr[i]:SetScript("OnLeave", BankItems_Button_OnLeave)
 	ItemButtonAr[i]:SetScript("OnEnter", BankItems_Button_OnEnter)
