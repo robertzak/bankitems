@@ -1,5 +1,5 @@
 ﻿--[[	*****************************************************************
-	BankItems v3.0
+	BankItems v3.4.1.0
 	January 28, 2023
 
 	Author: Xinhuan @ US Blackrock Alliance
@@ -1554,6 +1554,7 @@ function BankItems_PopulateFrame()
 end
 
 function BankItems_DebugItem(item)
+	-- Recursive helper function to print a table item
 	for key, value in pairs(item) do
 		if(type(value) == "table") then
 			BankItems_DebugItem(value)
@@ -1564,7 +1565,8 @@ function BankItems_DebugItem(item)
 	end
 end
 
-function BankItems_printTableKeys(t)	
+function BankItems_PrintTableKeys(t)
+	-- Helper function to print just the keys of a table
 	for key, value in pairs(t) do
 		print(key)
 	end
@@ -2211,9 +2213,29 @@ local function BankItems_createUniqueItem(link)
 	return uniqueItem
 end
 
+function BankItems_GetItemCount(item)
+	-- Helper to try to get the count of the items
+	
+	local itemCount = 1
+	if (item.count) then 
+		itemCount = item.count
+	elseif(item.icon) then
+		if(type(item.icon) == "table") then
+			itemCount = item.icon.stackCount
+		-- TODO remove else if things seem to work..
+		else
+			BankItems_DebugItem(item)
+		end
+	end
+	
+	return itemCount
+end
+
 function BankItems_Generate_ItemCache()
 	-- This function generates an item cache that contains everything all players except the current player on the current realm
-	local temp, uniqueItem
+	--[[ TODO Thran: need to debug this
+	]]
+	local temp, uniqueItem, itemCount
 	local data = newTable()
 	for key, bankPlayer in pairs(BankItems_Save) do
 		local _, realm = strsplit("|", key)
@@ -2223,17 +2245,22 @@ function BankItems_Generate_ItemCache()
 					--temp = strmatch(bankPlayer[num].link, "%[(.*)%]")
 					temp = tonumber(strmatch(bankPlayer[num].link, "item:(%d+)"))
 					if temp then
+						itemCount = BankItems_GetItemCount(bankPlayer[num])
 						BankItems_Cache_ItemName(temp, bankPlayer[num].link)
 						data[temp] = data[temp] or newTable()
 						data[temp][key] = data[temp][key] or newTable()
-						data[temp][key].count = (data[temp][key].count or 0) + (bankPlayer[num].count or 1)
-						data[temp][key].bank = (data[temp][key].bank or 0) + (bankPlayer[num].count or 1)
+						--data[temp][key].count = (data[temp][key].count or 0) + (bankPlayer[num].count or 1)
+						data[temp][key].count = (data[temp][key].count or 0) + itemCount
+						--data[temp][key].bank = (data[temp][key].bank or 0) + (bankPlayer[num].count or 1)
+						data[temp][key].bank = (data[temp][key].bank or 0) + itemCount
 						uniqueItem = BankItems_createUniqueItem(bankPlayer[num].link)
 						if uniqueItem then 
 							data[uniqueItem] = data[uniqueItem] or newTable()
 							data[uniqueItem][key] = data[uniqueItem][key] or newTable()
-							data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + (bankPlayer[num].count or 1)
-							data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + (bankPlayer[num].count or 1)
+							--data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + (bankPlayer[num].count or 1)
+							data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + itemCount
+							--data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + (bankPlayer[num].count or 1)
+							data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + itemCount
 						end
 					end
 				end
@@ -2247,28 +2274,45 @@ function BankItems_Generate_ItemCache()
 							--temp = strmatch(theBag[bagItem].link, "%[(.*)%]")
 							temp = tonumber(strmatch(theBag[bagItem].link, "item:(%d+)"))
 							if temp then
+								itemCount = BankItems_GetItemCount(theBag[bagItem])
 								BankItems_Cache_ItemName(temp, theBag[bagItem].link)
 								data[temp] = data[temp] or newTable()
 								data[temp][key] = data[temp][key] or newTable()
-								data[temp][key].count = (data[temp][key].count or 0) + (theBag[bagItem].count or 1)
+								--data[temp][key].count = (data[temp][key].count or 0) + (theBag[bagItem].count or 1)
+								data[temp][key].count = (data[temp][key].count or 0) + itemCount
 								uniqueItem = BankItems_createUniqueItem(theBag[bagItem].link)
 								if uniqueItem then 
 									data[uniqueItem] = data[uniqueItem] or newTable()
 									data[uniqueItem][key] = data[uniqueItem][key] or newTable()
-									data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + (theBag[bagItem].count or 1)
+									--data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + (theBag[bagItem].count or 1)
+									data[uniqueItem][key].count = (data[uniqueItem][key].count or 0) + itemCount
 								end
 								if bagNum >= 0 and bagNum <= 4 then
 									data[temp][key].inv = (data[temp][key].inv or 0) + (theBag[bagItem].count or 1)
-									if uniqueItem then data[uniqueItem][key].inv = (data[uniqueItem][key].inv or 0) + (theBag[bagItem].count or 1) end
+									if uniqueItem then
+										--data[uniqueItem][key].inv = (data[uniqueItem][key].inv or 0) + (theBag[bagItem].count or 1)
+										data[uniqueItem][key].inv = (data[uniqueItem][key].inv or 0) + itemCount
+									end
 								elseif bagNum == 100 then
-									data[temp][key].equipped = (data[temp][key].equipped or 0) + (theBag[bagItem].count or 1)
-									if uniqueItem then data[uniqueItem][key].equipped = (data[uniqueItem][key].equipped or 0) + (theBag[bagItem].count or 1) end
+									--data[temp][key].equipped = (data[temp][key].equipped or 0) + (theBag[bagItem].count or 1)
+									data[temp][key].equipped = (data[temp][key].equipped or 0) + itemCount
+									if uniqueItem then
+										--data[uniqueItem][key].equipped = (data[uniqueItem][key].equipped or 0) + (theBag[bagItem].count or 1)
+										data[uniqueItem][key].equipped = (data[uniqueItem][key].equipped or 0) + itemCount
+									end
 								elseif bagNum == 101 then
-									data[temp][key].mail = (data[temp][key].mail or 0) + (theBag[bagItem].count or 1)
-									if uniqueItem then data[uniqueItem][key].mail = (data[uniqueItem][key].mail or 0) + (theBag[bagItem].count or 1) end
+									--data[temp][key].mail = (data[temp][key].mail or 0) + (theBag[bagItem].count or 1)
+									data[temp][key].mail = (data[temp][key].mail or 0) + itemCount
+									if uniqueItem then
+										--data[uniqueItem][key].mail = (data[uniqueItem][key].mail or 0) + (theBag[bagItem].count or 1)
+										data[uniqueItem][key].mail = (data[uniqueItem][key].mail or 0) + itemCount
+									end
 								else
 									data[temp][key].bank = (data[temp][key].bank or 0) + (theBag[bagItem].count or 1)
-									if uniqueItem then data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + (theBag[bagItem].count or 1) end
+									if uniqueItem then
+										--data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + (theBag[bagItem].count or 1)
+										data[uniqueItem][key].bank = (data[uniqueItem][key].bank or 0) + itemCount
+									end
 								end
 							end
 						end
@@ -2283,6 +2327,8 @@ function BankItems_Generate_ItemCache()
 	BankItems_TooltipCache = newTable()
 end
 
+
+
 function BankItems_Generate_SelfItemCache()
 	-- This function generates an item cache with only the player's items
 	local temp, uniqueItem
@@ -2296,13 +2342,19 @@ function BankItems_Generate_SelfItemCache()
 			if temp then
 				BankItems_Cache_ItemName(temp, bankPlayer[num].link)
 				data[temp] = data[temp] or newTable()
-				data[temp].count = (data[temp].count or 0) + (bankPlayer[num].count or 1)
-				data[temp].bank = (data[temp].bank or 0) + (bankPlayer[num].count or 1)
+				--[[ Thran: TODO debug counts here. Check if need to use stackCount instead?
+				]]
+				--data[temp].count = (data[temp].count or 0) + (bankPlayer[num].count or 1)
+				data[temp].count = (data[temp].count or 0) + (bankPlayer[num].icon.stackCount or 1)
+				--data[temp].bank = (data[temp].bank or 0) + (bankPlayer[num].count or 1)
+				data[temp].bank = (data[temp].bank or 0) + (bankPlayer[num].icon.stackCount or 1)
 				uniqueItem = BankItems_createUniqueItem(bankPlayer[num].link)
 				if uniqueItem then 
 					data[uniqueItem] = data[uniqueItem] or newTable()
-					data[uniqueItem].count = (data[uniqueItem].count or 0) + (bankPlayer[num].count or 1)
-					data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (bankPlayer[num].count or 1)
+					--data[uniqueItem].count = (data[uniqueItem].count or 0) + (bankPlayer[num].count or 1)
+					--data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (bankPlayer[num].count or 1)
+					data[uniqueItem].count = (data[uniqueItem].count or 0) + (bankPlayer[num].icon.stackCount or 1)
+					data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (bankPlayer[num].icon.stackCount or 1)
 				end
 			end
 		end
@@ -2324,24 +2376,40 @@ function BankItems_Generate_SelfItemCache()
 					if temp then
 						BankItems_Cache_ItemName(temp, theBag[bagItem].link)
 						data[temp] = data[temp] or newTable()
-						data[temp].count = (data[temp].count or 0) + (theBag[bagItem].count or 1)
+						--data[temp].count = (data[temp].count or 0) + (theBag[bagItem].count or 1)												
+						data[temp].count = (data[temp].count or 0) + (BankItems_GetItemCount(theBag[bagItem]))
 						uniqueItem = BankItems_createUniqueItem(theBag[bagItem].link)
 						if uniqueItem then 
 							data[uniqueItem] = data[uniqueItem] or newTable()
-							data[uniqueItem].count = (data[uniqueItem].count or 0) + (theBag[bagItem].count or 1)
+							--data[uniqueItem].count = (data[uniqueItem].count or 0) + (theBag[bagItem].count or 1)
+							data[uniqueItem].count = (data[uniqueItem].count or 0) + (theBag[bagItem].icon.stackCount or 1)
 						end
 						if bagNum >= 0 and bagNum <= 4 then
-							data[temp].inv = (data[temp].inv or 0) + (theBag[bagItem].count or 1)
-							if uniqueItem then data[uniqueItem].inv = (data[uniqueItem].inv or 0) + (theBag[bagItem].count or 1) end
+							--data[temp].inv = (data[temp].inv or 0) + (theBag[bagItem].count or 1)
+							data[temp].inv = (data[temp].inv or 0) + (theBag[bagItem].icon.stackCount or 1)
+							if uniqueItem then 
+								--data[uniqueItem].inv = (data[uniqueItem].inv or 0) + (theBag[bagItem].count or 1)
+								data[uniqueItem].inv = (data[uniqueItem].inv or 0) + (theBag[bagItem].icon.stackCount or 1)
+							end
 						elseif bagNum == 100 then
+							-- TODO need to change this? This is equipped items..
 							data[temp].equipped = (data[temp].equipped or 0) + (theBag[bagItem].count or 1)
-							if uniqueItem then data[uniqueItem].equipped = (data[uniqueItem].equipped or 0) + (theBag[bagItem].count or 1) end
+							if uniqueItem then 
+								data[uniqueItem].equipped = (data[uniqueItem].equipped or 0) + (theBag[bagItem].count or 1)
+							end
 						elseif bagNum == 101 then
+							-- TODO this is items in the mail..may need to debug..
 							data[temp].mail = (data[temp].mail or 0) + (theBag[bagItem].count or 1)
-							if uniqueItem then data[uniqueItem].mail = (data[uniqueItem].mail or 0) + (theBag[bagItem].count or 1) end
+							if uniqueItem then 
+								data[uniqueItem].mail = (data[uniqueItem].mail or 0) + (theBag[bagItem].count or 1) 
+							end
 						else
-							data[temp].bank = (data[temp].bank or 0) + (theBag[bagItem].count or 1)
-							if uniqueItem then data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (theBag[bagItem].count or 1) end
+							--data[temp].bank = (data[temp].bank or 0) + (theBag[bagItem].count or 1)
+							data[temp].bank = (data[temp].bank or 0) + (theBag[bagItem].icon.stackCount or 1)
+							if uniqueItem then
+								--data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (theBag[bagItem].count or 1)
+								data[uniqueItem].bank = (data[uniqueItem].bank or 0) + (theBag[bagItem].icon.stackCount or 1)
+							end
 						end
 					end
 				end
@@ -2479,6 +2547,9 @@ function BankItems_AddTooltipData(self, ...)
 		return ...
 	end
 	local item = BankItems_createUniqueItem(link) or item
+	
+	--[[Thran: TODO figure out why the counts are so broken here. May need to change something from count-> stackCount
+	]]
 
 	-- Hawksy: if A mails something to B, it doesn't show up properly for B until it arrives in B's mailbox and B opens their mailbox
 
