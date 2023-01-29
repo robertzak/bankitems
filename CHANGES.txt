@@ -221,3 +221,8 @@ FIXED: BankItems v6.x.x.x text shown as double line in interface options panel. 
 v2.5 Modified to work in Classic, by Hawksy, 2019 Sept and Oct
 v2.55 Fixed issue with movement to or from bank giving double counting, by Hawksy, 2019 Dec
 v2.56 Updated for 1/13/6 by Hawksy, 2021 Jan
+------------------------------------------------------------------------
+Janaury 29, 2023 - v3.4.1.0 Updated for WotLK Classic 3.4.1 by Thranduel
+		- Updated Interface version
+		- Fixed Lua errors from change to 10.0 API
+------------------------------------------------------------------------

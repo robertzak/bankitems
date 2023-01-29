@@ -195,13 +195,8 @@ Xinhuan's Note:
 -- 2019-December-29 Version 2.55 fixed an issue where moving something to or from the bank gave double-counting.
 -- 2021-Jan-10 Version 2.56 updated for 1.13.6
 
--- January 28, 2023 Thranduel @ Mankirk: BankItems WotLK Classic Version 3.0
+-- January 29, 2023 Thranduel @ Mankirk: BankItems WotLK Classic Version 3.0
 --		Fixed mod to work with 10.0 API added in WotLK 3.4.1
---			* You can once again view the items in the bags/bank for all characters you've viewed
---			* You can search for items and get accurate counts
---		Known Issues:
--- 			* Items Counts for tooltips are totally jacked up
-
 --]]
 
 BankItems_Save			= {}		-- table, SavedVariable, can't be local
@@ -228,9 +223,7 @@ BankItems_TooltipCache = {} -- table, contains a cache of tooltip lines that hav
 local BANKITEMS_BOTTOM_SCREEN_LIMIT	= 80				-- Pixels from bottom not to overlap BankItem bags
 local BANKITEMS_UCFA = updateContainerFrameAnchors	-- Remember Blizzard's UCFA for NON-SAFE replacement
 local BAGNUMBERS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100} -- List of bag numbers used internally by BankItems (11 and 101 removed for Classic)
-local BAGNUMBERSPLUSMAIL = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 101}	-- List of bag numbers used internally by BankItems (11 removed for Classic)
--- Why is 11 removed for "classic" should it be there for bc/wotlk? There are 7 bank slots, 4 bag slots , and the backpack for 12 total (IE 0-11)
---local BAGNUMBERSPLUSMAIL = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100, 101}	
+local BAGNUMBERSPLUSMAIL = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100, 101}	-- List of bag numbers used internally by BankItems (11 removed for Classic)
 -- 0 through 4 are the player's bags, to be shown in reverse order, preceded by 100, the player's equipment
 -- 5 through 10 are the bank bags, left to right
 -- 101 is never visible, contains the mail information
@@ -2523,9 +2516,6 @@ function BankItems_AddTooltipData(self, ...)
 		return ...
 	end
 	local item = BankItems_createUniqueItem(link) or item
-	
-	--[[Thran: TODO figure out why the counts are so broken here. May need to change something from count-> stackCount
-	]]
 
 	-- Hawksy: if A mails something to B, it doesn't show up properly for B until it arrives in B's mailbox and B opens their mailbox
 
@@ -2661,7 +2651,7 @@ function BankItems_Hooktooltip(tooltip)
 	end
 	local e = tooltip.SetCurrencyToken
 	tooltip.SetCurrencyToken = function(self, ...)
-		self.BankItems_Link = GetCurrencyListLink(...)
+		self.BankItems_Link = C_CurrencyInfo.GetCurrencyListLink(...)
 		e(self, ...)
 		BankItems_AddTooltipData(self)
 	end
